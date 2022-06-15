@@ -279,19 +279,19 @@ class HandFeatures():
         return angle
 
     @staticmethod
-    def compute_rotation_matrix(c1, c2, plotIt=False, inverted=False):
+    def compute_rotation_matrix(c1, c2, display=False, inverted=False):
 
         angle1, angle2, angle3 = np.empty([c1.shape[0], 1]), np.empty([c1.shape[0], 1]), np.empty([c1.shape[0], 1])
 
         for i in range(0, c1.shape[0]):
-            R1_sub = np.array([c1[i, :, 0], c1[i, :, 1], c1[i, :, 2]]).transpose()
-            R2_sub = np.array([c2[i, :, 0], c2[i, :, 1], c2[i, :, 2]])
+            c1_sub = np.array([c1[i, :, 0], c1[i, :, 1], c1[i, :, 2]]).transpose()
+            c2_sub = np.array([c2[i, :, 0], c2[i, :, 1], c2[i, :, 2]])
 
             if inverted:
-                R1_sub = np.array([c2[i, :, 0], c2[i, :, 1], c2[i, :, 2]]).transpose()
-                R2_sub = np.array([c1[i, :, 0], c1[i, :, 1], c1[i, :, 2]])
+                c1_sub = np.array([c2[i, :, 0], c2[i, :, 1], c2[i, :, 2]]).transpose()
+                c2_sub = np.array([c1[i, :, 0], c1[i, :, 1], c1[i, :, 2]])
 
-            R = np.matmul(R1_sub, R2_sub)
+            R = np.matmul(c1_sub, c2_sub)
             if R[1, 2] > 1:
                 R[1, 2] = 1
 
@@ -301,10 +301,33 @@ class HandFeatures():
 
             angle1[i, :] = math.degrees(math.asin(R[2, 1]))
 
-        if plotIt:
+        if display:
             plt.plot(angle1, label='X')
             plt.plot(angle2, label='Y')
             plt.plot(angle3, label='Z')
             plt.legend()
 
         return angle1, angle2, angle3
+
+    @staticmethod
+    def plot_hands(df_input: pd.DataFrame):
+
+        joint_names = [x[:-2] for x in df_input.columns.values]
+        input = df_input.as_matrix()
+
+        fig = plt.figure()
+        ax = fig.add_subplot(111, projection="3d")
+
+        for i in range(2, input.shape[1]//3):
+
+            x = input[0, i*3]
+            y = input[0, i*3 + 1]
+            z = input[0, i*3 + 2]
+
+            ax.scatter(x, y, z)
+            ax.text(x, y, z, joint_names[i*3])
+
+    @staticmethod
+    def display_hand_info(df_input: pd.DataFrame):
+
+        pass
