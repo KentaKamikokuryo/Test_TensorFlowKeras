@@ -331,3 +331,271 @@ class HandFeatures():
     def display_hand_info(df_input: pd.DataFrame):
 
         pass
+
+
+class Kinematics():
+
+    coodinate_forearmR: np.ndarray
+    coodinate_forearmL: np.ndarray
+    coodinate_handR: np.ndarray
+    coodinate_handL: np.ndarray
+
+    def __init__(self, df_input: pd.DataFrame):
+
+        self.df_input = df_input
+
+        self.thumb_EF_R = df_input.values[:, :]
+        self.thumb_D_R = df_input.values[:, :]
+        self.thumb_P_R = df_input.values[:, :]
+
+        self.index_EF_R = df_input.values[:, :]
+        self.index_D_R = df_input.values[:, :]
+        self.index_M_R = df_input.values[:, :]
+        self.index_P_R = df_input.values[:, :]
+
+        self.middle_EF_R = df_input.values[:, :]
+        self.middle_D_R = df_input.values[:, :]
+        self.middle_M_R = df_input.values[:, :]
+        self.middle_P_R = df_input.values[:, :]
+
+        self.ring_EF_R = df_input.values[:, :]
+        self.ring_D_R = df_input.values[:, :]
+        self.ring_M_R = df_input.values[:, :]
+        self.ring_P_R = df_input.values[:, :]
+
+        self.pinky_EF_R = df_input.values[:, :]
+        self.pinky_D_R = df_input.values[:, :]
+        self.pinky_M_R = df_input.values[:, :]
+        self.pinky_P_R = df_input.values[:, :]
+
+
+
+        self.thumb_EF_L = df_input.values[:, :]
+        self.thumb_D_L = df_input.values[:, :]
+        self.thumb_P_L = df_input.values[:, :]
+
+        self.index_EF_L = df_input.values[:, :]
+        self.index_D_L = df_input.values[:, :]
+        self.index_M_L = df_input.values[:, :]
+        self.index_P_L = df_input.values[:, :]
+
+        self.middle_EF_L = df_input.values[:, :]
+        self.middle_D_L = df_input.values[:, :]
+        self.middle_M_L = df_input.values[:, :]
+        self.middle_P_L = df_input.values[:, :]
+
+        self.ring_EF_L = df_input.values[:, :]
+        self.ring_D_L = df_input.values[:, :]
+        self.ring_M_L = df_input.values[:, :]
+        self.ring_P_L = df_input.values[:, :]
+
+        self.pinky_EF_L = df_input.values[:, :]
+        self.pinky_D_L = df_input.values[:, :]
+        self.pinky_M_L = df_input.values[:, :]
+        self.pinky_P_L = df_input.values[:, :]
+
+
+        self.palm_R = df_input.values[:, :]
+        self.palm_L = df_input.values[:, :]
+
+        self.hand_radius_R = df_input.values[:, :]
+        self.wrist_R = df_input.values[:, :]
+        self.elbow_R = df_input.values[:, :]
+
+        self.hand_radius_L = df_input.values[:, :]
+        self.wrist_L = df_input.values[:, :]
+        self.elbow_L = df_input.values[:, :]
+
+        self._generate_coodinate()
+
+    def _generate_distance(self):
+
+        # distance between the end-effector and the end-effectors with the palm
+        distanceR = HandFeatures.compute_distance_EF(thumb_EF=self.thumb_EF_R, index_EF=self.index_EF_R,
+                                                     middle_EF=self.middle_EF_R, ring_EF=self.ring_EF_R,
+                                                     pinky_EF=self.pinky_EF_R, palm=self.palm_R)
+
+        distanceL = HandFeatures.compute_distance_EF(thumb_EF=self.thumb_EF_L, index_EF=self.index_EF_L,
+                                                     middle_EF=self.middle_EF_L, ring_EF=self.ring_EF_L,
+                                                     pinky_EF=self.pinky_EF_L, palm=self.palm_L)
+
+        return distanceR, distanceL
+
+    def _generate_coodinate(self):
+
+        # Right Forearm reference system
+        self.coodinate_forearmR = HandFeatures.compute_forearm_coordinate(hand_radius=self.hand_radius_R,
+                                                                          wrist=self.wrist_R,
+                                                                          elbow=self.elbow_R, display=False)
+
+        # Left Forearm reference system
+        self.coodinate_forearmL = HandFeatures.compute_forearm_coordinate(hand_radius=self.hand_radius_L,
+                                                                          wrist=self.wrist_L,
+                                                                          elbow=self.elbow_L, display=False)
+
+        # Right Hand reference system
+        self.coodinate_handR = HandFeatures.compute_hand_coordinate(index_proximal=self.index_M_R,
+                                                                    pinky_proximal=self.pinky_M_R,
+                                                                    palm=self.palm_R, display=False)
+
+        # Left Hand reference system
+        self.coodinate_handL = HandFeatures.compute_hand_coordinate(index_proximal=self.index_M_L,
+                                                                    pinky_proximal=self.pinky_M_L,
+                                                                    palm=self.palm_L, display=False)
+
+    def _generate_rotation_matrix(self):
+
+        coodinate_forearmR, coodinate_forearmL, coodinate_handR, coodinate_handL = self._compute_coodinate()
+
+        # Rotation matrix and angle between the two forearms
+        angle1, angle2, angle3 = HandFeatures.compute_rotation_matrix(c1=coodinate_forearmR, c2=coodinate_forearmL,
+                                                                      display=False)
+        angle1[:] = 0
+        angle2[:] = 0
+        angle3[:] = 0
+
+        # Rotation matrix and angle between the elbow and the forearm right
+        angle4, angle5, angle6 = HandFeatures.compute_rotation_matrix(c1=coodinate_forearmR, c2=coodinate_handR,
+                                                                      display=False)
+
+        # Rotation matrix and angle between the elbow and the forearm left
+        angle7, angle8, angle9 = HandFeatures.compute_rotation_matrix(c1=coodinate_forearmL, c2=coodinate_handL,
+                                                                      display=False)
+
+        angle_rotation = np.concatenate([angle1, angle2, angle3,
+                                         angle4, angle5, angle6,
+                                         angle7, angle8, angle9])
+
+        return angle_rotation
+
+    def _generate_flexion_angle(self):
+
+        thumb_flexionR = HandFeatures.compute_thumb_flexion_angle(EF=self.thumb_EF_R,
+                                                                  D=self.thumb_D_R,
+                                                                  P=self.thumb_P_R, display=False)
+
+        index_flexionR1, index_flexionR2 = HandFeatures.compute_finger_flexion_angle(EF=self.index_EF_R,
+                                                                                     D=self.index_D_R,
+                                                                                     M=self.index_M_R,
+                                                                                     P=self.index_P_R, display=False)
+
+        middle_flexionR1, middle_flexionR2 = HandFeatures.compute_finger_flexion_angle(EF=self.middle_EF_R,
+                                                                                       D=self.middle_D_R,
+                                                                                       M=self.middle_M_R,
+                                                                                       P=self.middle_P_R, display=False)
+
+        ring_flexionR1, ring_flexionR2 = HandFeatures.compute_finger_flexion_angle(EF=self.ring_EF_R,
+                                                                                   D=self.ring_D_R,
+                                                                                   M=self.ring_M_R,
+                                                                                   P=self.ring_P_R, display=False)
+
+        pinky_flexionR1, pinky_flexionR2 = HandFeatures.compute_finger_flexion_angle(EF=self.pinky_EF_R,
+                                                                                     D=self.pinky_D_R,
+                                                                                     M=self.pinky_M_R,
+                                                                                     P=self.pinky_P_R, display=False)
+
+        fingers_flexionR = np.concatenate((thumb_flexionR,
+                                           index_flexionR1, index_flexionR2,
+                                           middle_flexionR1, middle_flexionR2,
+                                           ring_flexionR1, ring_flexionR2,
+                                           pinky_flexionR1, pinky_flexionR2), axis=1)
+
+
+        thumb_flexionL = HandFeatures.compute_thumb_flexion_angle(EF=self.thumb_EF_L,
+                                                                  D=self.thumb_D_L,
+                                                                  P=self.thumb_P_L, display=False)
+
+        index_flexionL1, index_flexionL2 = HandFeatures.compute_finger_flexion_angle(EF=self.index_EF_L,
+                                                                                     D=self.index_D_L,
+                                                                                     M=self.index_M_L,
+                                                                                     P=self.index_P_L, display=False)
+
+        middle_flexionL1, middle_flexionL2 = HandFeatures.compute_finger_flexion_angle(EF=self.middle_EF_L,
+                                                                                       D=self.middle_D_L,
+                                                                                       M=self.middle_M_L,
+                                                                                       P=self.middle_P_L, display=False)
+
+        ring_flexionL1, ring_flexionL2 = HandFeatures.compute_finger_flexion_angle(EF=self.ring_EF_L,
+                                                                                   D=self.ring_D_L,
+                                                                                   M=self.ring_M_L,
+                                                                                   P=self.ring_P_L, display=False)
+
+        pinky_flexionL1, pinky_flexionL2 = HandFeatures.compute_finger_flexion_angle(EF=self.pinky_EF_L,
+                                                                                     D=self.pinky_D_L,
+                                                                                     M=self.pinky_M_L,
+                                                                                     P=self.pinky_P_L, display=False)
+
+        fingers_flexionL = np.concatenate((thumb_flexionL,
+                                           index_flexionL1, index_flexionL2,
+                                           middle_flexionL1, middle_flexionL2,
+                                           ring_flexionL1, ring_flexionL2,
+                                           pinky_flexionL1, pinky_flexionL2), axis=1)
+
+        fingers_flexion = np.concatenate((fingers_flexionR, fingers_flexionL), axis=1)
+
+        return fingers_flexion
+
+    def _generate_abduction_angle(self):
+
+        index_abductionR = HandFeatures.compute_finger_abduction_angle(M=self.index_M_R, P=self.index_P_R,
+                                                                       hand_c=self.coodinate_handR, display=False)
+        middle_abductionR = HandFeatures.compute_finger_abduction_angle(M=self.middle_M_R, P=self.middle_P_R,
+                                                                        hand_c=self.coodinate_handR, display=False)
+        ring_abductionR = HandFeatures.compute_finger_abduction_angle(M=self.ring_M_R, P=self.ring_P_R,
+                                                                      hand_c=self.coodinate_handR, display=False)
+        pinky_abductionR = HandFeatures.compute_finger_abduction_angle(M=self.pinky_M_R, P=self.pinky_P_R,
+                                                                       hand_c=self.coodinate_handR, display=False)
+
+        fingers_abductionR = np.concatenate((index_abductionR, middle_abductionR, ring_abductionR, pinky_abductionR),
+                                            axis=1)
+
+        index_abductionL = HandFeatures.compute_finger_abduction_angle(M=self.index_M_L, P=self.index_P_L,
+                                                                       hand_c=self.coodinate_handL, display=False)
+        middle_abductionL = HandFeatures.compute_finger_abduction_angle(M=self.middle_M_L, P=self.middle_P_L,
+                                                                        hand_c=self.coodinate_handL, display=False)
+        ring_abductionL = HandFeatures.compute_finger_abduction_angle(M=self.ring_M_L, P=self.ring_P_L,
+                                                                      hand_c=self.coodinate_handL, display=False)
+        pinky_abductionL = HandFeatures.compute_finger_abduction_angle(M=self.pinky_M_L, P=self.pinky_P_L,
+                                                                       hand_c=self.coodinate_handL, display=False)
+
+        fingers_abductionL = np.concatenate((index_abductionL, middle_abductionL, ring_abductionL, pinky_abductionL),
+                                            axis=1)
+
+        fingers_abduction = np.concatenate((fingers_abductionR, fingers_abductionL), axis=1)
+
+        return fingers_abduction
+
+    def generate_kinematics(self, display):
+
+        distanceR, distanceL = self._generate_distance()
+
+        angle_rotation = self._generate_rotation_matrix()
+
+        # Computing of thumb and fingers angle (2 angles for the thumb and 3 angles for each finger)
+        angle_fingers_flexion = self._generate_flexion_angle()
+
+        angle_fingers_abduction = self._generate_abduction_angle()
+
+        kinematics = np.concatenate((distanceR,
+                                     distanceL,
+                                     angle_rotation,
+                                     angle_fingers_flexion,
+                                     angle_fingers_abduction), axis=1)
+
+        if (display):
+            print(kinematics[95:100, 0], "data kinematics")
+            print(kinematics.shape, "data kinematics shape")
+
+        return kinematics
+
+    def generate_locals(self, display):
+
+        locals = HandFeatures.compute_finger_joint_local_position(df_input=self.df_input,
+                                                                  hand_c_L=self.coodinate_handL,
+                                                                  hand_c_R=self.coodinate_handR)
+
+        if display:
+            print(locals, "locals")
+            print(locals.shap)
+
+        return locals
