@@ -332,7 +332,6 @@ class HandFeatures():
 
         pass
 
-
 class Kinematics():
 
     coodinate_forearmR: np.ndarray
@@ -367,8 +366,6 @@ class Kinematics():
         self.pinky_D_R = df_input.values[:, :]
         self.pinky_M_R = df_input.values[:, :]
         self.pinky_P_R = df_input.values[:, :]
-
-
 
         self.thumb_EF_L = df_input.values[:, :]
         self.thumb_D_L = df_input.values[:, :]
@@ -582,7 +579,7 @@ class Kinematics():
                                      angle_fingers_flexion,
                                      angle_fingers_abduction), axis=1)
 
-        if (display):
+        if display:
             print(kinematics[95:100, 0], "data kinematics")
             print(kinematics.shape, "data kinematics shape")
 
