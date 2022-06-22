@@ -4,7 +4,6 @@ from tabulate import tabulate
 
 class Ranked():
 
-    hyperparameters_list_sorted: list
     mean_list_sorted: list
     std_list_sorted: list
 
@@ -45,8 +44,6 @@ class Ranked():
 
         self.hyperparameter_best = self.hyperparameters_list_sorted[0]
 
-
-
         df = pd.DataFrame.from_dict(self.hyperparameters_list_sorted)
         df["mean"] = self.mean_list_sorted
         df["std"] = self.std_list_sorted
@@ -74,6 +71,18 @@ class Ranked():
 
         self.hyperparameter_best = np.load(self.path + name, allow_pickle=True).item()
         print("Hyperparameter_best has been loaded from: " + self.path + name)
+
+    def load_ranked_list(self, display: bool = False):
+
+        name = "ranked_" + self.name + ".csv"
+
+        self.hyperparameters_list_sorted = pd.read_csv(self.path + name)
+        print("Hyperparameters_ranked has been load from: " + self.path + name)
+
+        if display:
+
+            df = pd.DataFrame.from_dict(self.hyperparameters_list_sorted)
+            print(tabulate(df, headers="keys", tablefmt="psql"))
 
 
 

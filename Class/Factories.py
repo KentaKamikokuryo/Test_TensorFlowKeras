@@ -11,13 +11,33 @@ class ModelFactory():
 
     def create(self) -> IModel:
 
-        if self.model_name == "RF":
+        if self.model_name == Model.RF:
 
             model = RF(self.hyper_model)
 
-        elif self.model_name == "NV":
+        elif self.model_name == Model.LR:
 
-            model = NaiveBayes(self.hyper_model)
+            model = LR(self.hyper_model)
+
+        elif self.model_name == Model.AB:
+
+            model = AB(self.hyper_model)
+
+        elif self.model_name == Model.GB:
+
+            model = GB(self.hyper_model)
+
+        elif self.model_name == Model.CB:
+
+            model = CB(self.hyper_model)
+
+        elif self.model_name == Model.XGB:
+
+            model = XGB(self.hyper_model)
+
+        elif self.model_name == Model.LGBM:
+
+            model = LGBM(self.hyper_model)
 
         else:
             model = None
@@ -26,21 +46,21 @@ class ModelFactory():
 
 class DataSetFactory():
 
-    def __init__(self, data_info: dict):
+    def __init__(self, dataset_name: str):
 
-        self.dataset_name = data_info["dataset_name"]
+        self.dataset_name = dataset_name
 
     def create(self) -> IDataSet:
 
-        if self.dataset_name == "iris":
+        if self.dataset_name == DataSets.Iris:
 
             datasets = Iris(display=True)
 
-        elif self.dataset_name == "wine":
+        elif self.dataset_name == DataSets.Wine:
 
             datasets = Wine(display=True)
 
-        elif self.dataset_name == "digits":
+        elif self.dataset_name == DataSets.Digits:
 
             datasets = Digits(display=True)
 
@@ -49,6 +69,3 @@ class DataSetFactory():
             datasets = None
 
         return datasets
-
-
-

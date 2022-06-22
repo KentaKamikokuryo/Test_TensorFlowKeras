@@ -1,10 +1,40 @@
 import numpy as np
 import pandas as pd
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.ensemble import RandomForestClassifier, AdaBoostClassifier, GradientBoostingClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from catboost import CatBoostClassifier
 from sklearn.naive_bayes import GaussianNB
 from Class.Factories import ModelFactory
 
 from Class.Interfaces import IModel
+
+
+class Model:
+
+    RF = "RandomForest"
+    LR = "LogisticRegression"
+    AB = "AdaBoost"
+    GB = "GradientBoost"
+    CB = "CatBoost"
+    XGB = "XGBoost"
+    LGBM = "LightGBM"
+
+class ModelInfo:
+
+    def __init__(self):
+        self.model_names = [Model.RF,
+                            Model.LR,
+                            Model.AB,
+                            Model.GB,
+                            Model.CB,
+                            Model.XGB,
+                            Model.LGBM]
+
+    def get_model_names(self):
+        return self.model_names
+
 
 class RF(IModel):
 
@@ -27,7 +57,7 @@ class RF(IModel):
 
         return model
 
-class NaiveBayes(IModel):
+class LR(IModel):
 
     def __init__(self, hyper: dict):
 
@@ -35,9 +65,70 @@ class NaiveBayes(IModel):
 
     def create(self):
 
-        model = GaussianNB()
+        model = LogisticRegression()
 
         return model
+
+class AB(IModel):
+
+    def __init__(self, hyper: dict):
+
+        pass
+
+    def create(self):
+
+        model = AdaBoostClassifier()
+
+        return model
+
+class GB(IModel):
+
+    def __init__(self, hyper: dict):
+
+        pass
+
+    def create(self):
+
+        model = GradientBoostingClassifier()
+
+        return model
+
+class XGB(IModel):
+
+    def __init__(self, hyper: dict):
+
+        pass
+
+    def create(self):
+
+        model = XGBClassifier()
+
+        return model
+
+class LGBM(IModel):
+
+    def __init__(self, hyper: dict):
+
+        pass
+
+    def create(self):
+
+        model = LGBMClassifier()
+
+        return model
+
+class CB(IModel):
+
+    def __init__(self, hyper: dict):
+
+        pass
+
+    def create(self):
+
+        model = CatBoostClassifier()
+
+        return model
+
 
 class SupervisedModel():
 
@@ -55,6 +146,7 @@ class SupervisedModel():
 
         self.model_fac = ModelFactory(hyper_model=self.hyper_model)
         self.model = self.model_fac.create()
+
 
 
 

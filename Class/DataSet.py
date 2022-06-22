@@ -4,6 +4,24 @@ from sklearn import datasets
 from Class.Interfaces import IDataSet
 from tabulate import tabulate
 
+class DataSets:
+
+    Iris = "iris"
+    Wine = "wine"
+    Digits = "digits"
+
+class DataInfo:
+
+    def __init__(self):
+
+        self.data_names = [DataSets.Iris,
+                           DataSets.Wine,
+                           DataSets.Digits]
+
+    def get_dataset_names(self):
+
+        return self.data_names
+
 class Iris(IDataSet):
 
     def __init__(self, display: bool=False):
@@ -19,7 +37,7 @@ class Iris(IDataSet):
 
             print(df.head())
 
-        X,y  = datasets.load_iris(return_X_y=True)
+        X, y = datasets.load_iris(return_X_y=True)
 
         return X, y
 

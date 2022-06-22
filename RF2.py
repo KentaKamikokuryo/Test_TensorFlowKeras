@@ -4,20 +4,18 @@ from sklearn.ensemble import RandomForestClassifier
 import pandas as pd
 import numpy as np
 
-iris = datasets.load_iris()
+dataset = datasets.load_digits()
 
 # dividing the datasets into two parts. i.e. training data sets and test datasets
-X, y = datasets.load_iris(return_X_y=True)
+X, y = datasets.load_digits(return_X_y=True)
 
 # Splitting arrays or matrices into random train and test subsets
 # i.e. 70 % training data-sets and 30% test data-sets
 X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.30)
 
-data = pd.DataFrame({"sepallength": iris.data[:, 0], "sepalwidth": iris.data[:, 1],
-                     "petallength": iris.data[:, 2], "petalwidth": iris.data[:, 3],
-                     "species": iris.target})
+df = pd.DataFrame(dataset.data, columns=dataset.feature_names)
 
-print(data.head())
+print(df.head())
 
 # creating a RF classifier
 clf = RandomForestClassifier(n_estimators=100)
@@ -37,14 +35,20 @@ print()
 print("ACCURACY OF THE MODEL: ", metrics.accuracy_score(y_true=y_test, y_pred=y_pred))
 
 # predicting which type of flower it is
-clf.predict([[3, 3, 2, 2]])
+# clf.predict([[3, 3, 2, 2]])
 
 # using the feature importance variable
-feature_imp = pd.Series(clf.feature_importances_, index=iris.feature_names).sort_values(ascending=False)
+feature_imp = pd.Series(clf.feature_importances_, index=dataset.feature_names).sort_values(ascending=False)
 print(feature_imp)
 
 import matplotlib.pyplot as plt
 import seaborn as sns
+sns.set(style='ticks', rc={"grid.linewidth": 0.1})
+sns.set_context("paper", font_scale=1.5)
+color = sns.color_palette("Set2", 6)
+plt.rcParams['font.family'] = 'Times New Roman'
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
 
 # creating a bar plot
 sns.barplot(x=feature_imp, y=feature_imp.index)
@@ -53,7 +57,6 @@ sns.barplot(x=feature_imp, y=feature_imp.index)
 plt.xlabel("Feature Importance Score")
 plt.ylabel("Features")
 plt.title("Visualizing Importance Features")
-plt.legend()
 plt.show()
 
 # # Tuning random forest

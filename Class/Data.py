@@ -7,6 +7,7 @@ data_info = {"test_size": 0.2,
              "n_K_fold": 4,
              "k_shuffle": True}
 """
+
 class Data():
 
     def __init__(self, data_info: dict):
