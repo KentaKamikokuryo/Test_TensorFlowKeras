@@ -18,9 +18,18 @@ class DataInfo:
                            DataSets.Wine,
                            DataSets.Digits]
 
+        self.data_info = {"test_size": 0.3,
+                          "n_K_fold": 5,
+                          "k_shuffle": False}
+
     def get_dataset_names(self):
 
         return self.data_names
+
+    def get_data_info(self):
+
+        return self.data_info
+
 
 class Iris(IDataSet):
 

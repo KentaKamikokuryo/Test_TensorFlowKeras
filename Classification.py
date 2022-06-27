@@ -7,7 +7,7 @@ from sklearn.model_selection import KFold, cross_val_score, train_test_split
 from sklearn import metrics
 from Class.Ranked import Ranked
 from Class.Hyperparameters import Hyperparameters
-from Class.Data import Data
+
 
 class Manager:
 
@@ -24,13 +24,13 @@ class Manager:
         self.data_name = data_name
         self.test_size = data_info["test_size"]
         self.n_K_fold = data_info["n_K_fold"]
-
-        self.data_splitter = Data(data_info=data_info)
+        self.k_shuffle = data_info["k_shuffle"]
 
         modelInfo = ModelInfo()
         self.model_names = modelInfo.get_model_names()
 
         self.path_search = ""
+        self.path_best = ""
 
         self.__set_data()
 
@@ -66,31 +66,46 @@ class Manager:
         # create data-sets
         self.X, self.y = dataset_model.create()
 
-    def __fit_transform(self, hyper_model):
+        self.X_train, self.X_test, self.y_train, self.y_test = train_test_split(self.X, self.y, test_size=self.test_size)
+
+    def __fit_valid(self, hyper_model):
 
         cv = KFold(n_splits=self.n_K_fold, shuffle=False)
         ML_model = self.__create_ML_model(hyper_model=hyper_model)
 
-        scores = cross_val_score(ML_model, X=self.X, y=self.y, cv=cv)
+        scores = []
 
-        # scores = []
-        # for train_index, test_index in cv.split(X=self.X):
-        #
-        #     # get train and test data
-        #     X_train, X_test = self.X[train_index], self.X[test_index]
-        #     y_train, y_test = self.y[train_index], self.y[test_index]
-        #     # fit model
-        #     ML_model.fit(X_train, y_train)
-        #     # predict test data
-        #     y_pred = ML_model.predict(X_test)
-        #     # loss
-        #     metric = metrics.accuracy_score(y_true=y_test, y_pred=y_pred)
-        #     scores.append(metric)
+        for fit_index, valid_index in cv.split(X=self.X_train):
+
+            # get train and test data
+            X_fit, X_valid = self.X_train[fit_index], self.X_train[valid_index]
+            y_fit, y_valid = self.y_train[fit_index], self.y_train[valid_index]
+
+            # fit model
+            ML_model.fit(X_fit, y_valid)
+
+            # predict test data
+            y_pred = ML_model.predict(X_fit)
+
+            # loss
+            metric = metrics.accuracy_score(y_true=y_valid, y_pred=y_pred)
+            scores.append(metric)
 
         metric_mean = np.mean(scores)
         metric_std = np.std(scores)
 
         return metric_mean, metric_std
+
+    def __test(self, hyper_model):
+
+        ML_model = self.__create_ML_model(hyper_model=hyper_model)
+
+        ML_model.fit(self.X_train, self.y_train)
+        y_pred = ML_model.predict(self.X_test)
+
+        accuracy = metrics.accuracy_score(y_true=self.y_test, y_pred=y_pred)
+
+        return accuracy
 
     def __run_search(self):
 
@@ -100,10 +115,10 @@ class Manager:
 
             for hyper_model in self.hyper_model_list:
 
-                metric_mean, metric_std = self.__fit_transform(hyper_model=hyper_model)
+                metric_mean, metric_std = self.__fit_valid(hyper_model=hyper_model)
                 self.ranked.add(hyperparameter=hyper_model, mean=metric_mean, std=metric_std)
 
-            self.ranked.ranked(display=True, save=True)
+            self.ranked.ranked(display=True, save=self.save_best_search)
             self.ranked.save_best_hyperparameter()
 
             print("Run search is done on " + str(self.data_name) + "with model " + model_name)
@@ -117,76 +132,49 @@ class Manager:
 
         for model_name in self.model_names:
 
-            metric_mean, metric_std = self.__fit_transform(hyper_model=self.hyper_model_best)
+            accuracy = self.__test(hyper_model=self.hyper_model_best)
 
             ranked_comparison.add(hyperparameter=self.hyper_model_best,
-                                  mean=metric_mean,
-                                  std=metric_std)
+                                  mean=accuracy,
+                                  std=0)
 
-        ranked_comparison.ranked(display=True, save=True)
+        ranked_comparison.ranked(display=True, save=self.save_best_comparison)
         ranked_comparison.save_best_hyperparameter()
 
     def set_interface(self, interface_dict: dict):
 
         self.hyper_model_search = interface_dict["hyper_model_search"]
-        self.train_final_model = interface_dict["train_final_model"]
-        self.perform_analysis = interface_dict["perform_analysis"]
-        self.save_model = interface_dict["save_model"]
-        self.save_results = interface_dict["save_results"]
+        self.save_best_search = interface_dict["save_best_search"]
+        self.save_best_comparison = interface_dict["save_best_comparison"]
 
     def run(self):
 
         if self.hyper_model_search:
 
             self.__run_search()
+            self.__run_comparison()
 
         else:
 
             self.__run_comparison()
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
 Is = {"search": True,
-      "train": True,
-      "run": True}
+      "run": False}
 
 for I in Is.keys():
 
     if I == "search":
 
         interface_dict = {"hyper_model_search": True,
-                          "train_final_model": False,
-                          "perform_analysis": False,
-                          "save_model": False,
-                          "save_results": False}
-
-    elif I == "train":
-
-        interface_dict = {"hyper_model_search": False,
-                          "train_final_model": True,
-                          "perform_analysis": False,
-                          "save_model": True,
-                          "save_results": True}
+                          "save_best_search": True,
+                          "save_best_comparison": True}
 
     elif I == "run":
 
         interface_dict = {"hyper_model_search": False,
-                          "train_final_model": False,
-                          "perform_analysis": True,
-                          "save_model": True,
-                          "save_results": True}
+                          "save_best_search": True,
+                          "save_best_comparison": True}
 
     else:
 
@@ -194,9 +182,10 @@ for I in Is.keys():
 
     dataInfo = DataInfo()
     data_names = dataInfo.get_dataset_names()
+    data_info = dataInfo.get_data_info()
 
     for data_name in data_names:
 
-        manager = Manager()
-
-
+        manager = Manager(data_name=data_name, data_info=data_info)
+        manager.set_interface(interface_dict=interface_dict)
+        manager.run()
